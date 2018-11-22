@@ -5,7 +5,7 @@ import level, effectplayer
 import time
 
 class Prompt(threading.Thread):
-    def __init__(self, cols, lines, gameflag, name='Prompt'):
+    def __init__(self, cols, lines, missionFailedFlag, name='Prompt'):
         self.DISPLAYSURF        = None
 
         # Thread Initiating =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -15,6 +15,7 @@ class Prompt(threading.Thread):
         # Set Classes =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         self.EquipMetaData      = self.getMeta('MetaData\\_equipmetadata')
         self.LevelMetaData      = self.getMeta('MetaData\\_levelmetadata')
+        self.FailedFlag         = missionFailedFlag
 
         if self.EquipMetaData == None:
             print('EquipMetaData has Error')
@@ -23,7 +24,7 @@ class Prompt(threading.Thread):
             print('LevelMetaData has Error')
             sys.exit(0)
 
-        self.Level              = level.Level(self.LevelMetaData, self.EquipMetaData)
+        self.Level              = level.Level(self.LevelMetaData, self.EquipMetaData, self.FailedFlag)
         self.Effects            = effectplayer.EffectPlayer()
 
         # Set Current Level =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -44,7 +45,6 @@ class Prompt(threading.Thread):
                                    'Status           - ']   # Doesn't print
         self.SecurityInfo       = ['Encryption key   - ',
                                    'Password Length  - ']
-        self.GameFlag           = gameflag
         self.EquipNameFlag      = ['FIREWALL', 'MODEM', 'CPU1', 'CPU2', 'RAM1', 'RAM2', 'HDD']
         self.EquipNotExistFlag  = True
 
@@ -167,6 +167,7 @@ class Prompt(threading.Thread):
 
 
 
+
     def parseOption(self):
         '''
         Parsing Option.
@@ -208,6 +209,10 @@ class Prompt(threading.Thread):
             '''
             
             '''
+            if self.FailedFlag[0] == False:
+                self.threadAlive = False
+                break
+
             try:
                 command = self.parseOption()
 
@@ -931,6 +936,7 @@ class Prompt(threading.Thread):
             count   = 0
             Comp    = 0x0000000F
             LvHex   = 0x0
+            Money   = 0
 
             if Level == 1:
                 LvHex = 0x1
@@ -945,36 +951,49 @@ class Prompt(threading.Thread):
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 1000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 1000
                     count = 6
+
             elif Equip == 'MODEM':
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 2000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 2000
                     count = 5
+
             elif Equip == 'CPU1':
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 2000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 2000
                     count = 4
+
             elif Equip == 'CPU2':
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 2000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 2000
                     count = 3
+
             elif Equip == 'RAM1':
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 2000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 2000
                     count = 2
+
             elif Equip == 'RAM2':
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 2000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 2000
                     count = 1
+
             elif Equip == 'HDD':
                 if self.Level.currentLoadedDomainInfo['localhost'][3] < (LvHex * 1000):
                     raise MoneyNotEnough
                 else:
+                    Money = LvHex * 1000
                     count = 0
 
 
@@ -985,6 +1004,7 @@ class Prompt(threading.Thread):
 
             DeleteEquip = self.Level.currentEquip & Comp
 
+            self.Level.currentLoadedDomainInfo['localhost'][3] -= Money
             self.Level.currentEquip -= DeleteEquip
             self.Level.currentEquip += LvHex
 
@@ -1010,7 +1030,6 @@ class Prompt(threading.Thread):
     def printOption(self):
         optionString = ('\nHacker Commands' +
                         '\n----------------------------------------------------------------------'+
-                        '\n' + 
                         '\nabort            - Abort an ongoing transfer, download, crack, etc.' +
                         '\nclear            - Clears the command console window.' +
                         '\nconfig           - Display the current hardware configuration.' +
@@ -1019,7 +1038,7 @@ class Prompt(threading.Thread):
                         '\n                   ex > config [equipment name] [equipment level]' +
                         '\n                        set current equipment level.' +
                         '\nconnect          - Connect to your target.' +
-                        '\n                   ex > connect [Server Address] [Port]'
+                        '\n                   ex > connect [Server Address] [Port]' +
                         '\n                   ex > connect test.com 80' +
                         '\ncrack            - Crack your target sysytem.' + 
                         '\ndecrypt          - Decrypts the encryption key of a server.' +
@@ -1027,7 +1046,6 @@ class Prompt(threading.Thread):
                         '\n                   ex > delete [FileName]' +
                         '\ndownload         - download target\'s data that you want.' +
                         '\n                   ex > download [Target\'s FileName]' +
-                        '\ngameover         - Exit Game.' +
                         '\nhelp             - Displays a list of commands and their meaning.' +
                         '\nscan             - Scan a host for open ports.' +
                         '\n                   ex > scan [host Address]' +

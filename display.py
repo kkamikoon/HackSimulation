@@ -222,7 +222,7 @@ class Draw:
         :param CenterPos:       Circle's Center Point(Position of Circle)
         :param Status:          Status of Circle
                                 - NORMAL_POINT(BROWN) : Normal Position on the map
-                                - BOUND_POINT(PURPLE) : Bound Position on the map
+                                - BOUND_POINT(PURPLE) : Bound  Position on the map
                                 - HIDDEN_POINT(GREEN) : Hidden Position on the map(Default == Hide)
                                 - TARGET_POINT(RED)   : Target Position on the map
         '''
@@ -322,8 +322,8 @@ class Draw:
         self.EquipNames     = []
         self.EquipLevels    = []
         self.EquipPosition  = []    
-
-        Comp    = 0x0000000F
+                                      
+        Comp                        = 0x0000000F
 
         for CategoryNum in range(7):      #Data Area And
             LvHex = Meta & Comp   
@@ -334,7 +334,7 @@ class Draw:
             self.EquipNames.append(   self.GetEquipCategory(CategoryNum))
             self.EquipLevels.append(  self.GetEquipLevel(LvHex))
             self.EquipPosition.append(self.GetEquipPosition(CategoryNum))
-            
+
             Comp = Comp << 4        
         
 
@@ -343,7 +343,10 @@ class Draw:
         '''
         :param Num:         Number of Categories
                             - HDD, RAM2, RAM1, CPU2, CPU1, MODEM, FIREWALL 
-                            - 6    5     4     3     2     1      0
+                     Array  - 0    1     2     3     4     5      6
+                     Hex    - 6    5     4     3     2     1      0
+                              
+
         :return:            Category Value
         '''
         
@@ -382,7 +385,8 @@ class Draw:
         '''
         :param Num:         Number of Categories
                             - HDD, RAM2, RAM1, CPU2, CPU1, MODEM, FIREWALL 
-                            - 6    5     4     3     2     1      0
+                     Array  - 0    1     2     3     4     5      6
+                     Hex    - 6    5     4     3     2     1      0
         :return:            Category Value
         '''
         
@@ -416,3 +420,45 @@ class Draw:
     def DrawGameOver(self):
         self.DISPLAYSURF.blit(self.GameOverImg, (100, 200))
     
+
+
+class NewExplorer():
+    def __init__(self, caption, img):
+        '''
+        :param caption:     Caption text of your new explorer
+        :param img:         Image directory of your new explorer
+        '''
+
+        # Set pygame elements =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        pygame.init()
+        pygame.display.set_caption(caption)
+
+        self.NewExFPS               = 30
+        self.NewExMapImg            = pygame.image.load(img)
+        self.NewExMapImgWH          = (self.NewExMapImg.get_width(), self.NewExMapImg.get_height())
+                                    # self.MapImgWH[0] = width
+                                    # self.MapImgWH[1] = height
+        self.NewExFPSCLOCK          = pygame.time.Clock()
+        self.NewExDISPLAYSURF       = pygame.display.set_mode(self.NewExMapImgWH, pygame.DOUBLEBUF, 32)
+
+
+
+    def Explorer(self):
+        Done = False
+        
+        while not Done:
+            
+            self.NewExDISPLAYSURF.blit(self.NewExMapImg, (0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    Done = True
+                elif event.type == pygame.KEYDOWN:
+                    Done = True
+
+
+            pygame.display.flip()
+            self.NewExFPSCLOCK.tick(self.NewExFPS)
+
+
+

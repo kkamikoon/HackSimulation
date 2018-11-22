@@ -21,13 +21,13 @@ class Main():
         self.DISPLAYSURF        = pygame.display.set_mode(self.MapImgWH, pygame.DOUBLEBUF, 32)
         self.FONT               = pygame.font.Font('Quark-Bold.otf', 15)
 
-        self.Flag               = [True, False]
+        self.MissionFailedFlag  = [True]      # if game over, the flag be changed to False
     
         self.DrawLineX          = 0
         self.DrawLineY          = 0
 
         # Set Classes =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        self.Prompt             = prompt.Prompt('70', '56', self.Flag)
+        self.Prompt             = prompt.Prompt('70', '56', self.MissionFailedFlag)
         self.Music              = musicplayer.MusicPlayer()
         self.Effect             = effectplayer.EffectPlayer()
 
@@ -106,7 +106,18 @@ class Main():
                                 MouseClicked    = True
                                 ClickedPos      = self.Prompt.Level.currentLoadedDomainInfo[Domain][1]
                                 ClickedDomain   = Domain
+
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == K_F1:
+                        self.GetHelpMessageWindows()
+                    elif event.key == K_F2:
+                        self.GetMissionStatus()
+
                
+            # Mission Failed Check  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+            if self.MissionFailedFlag[0] == False:
+                Run = False
+
 
             # If MouseClicked ==> Clicked correct Position of Domain=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
             #                     and If The Domain Scan Status is True, The Scan Data will Printed.
@@ -176,18 +187,76 @@ class Main():
                                                             )
                             padY -= 20
             
-                '''
-                self.DisplayText.makeText(  self.FONT,
-                                            'hahaha',
-                                            True,
-                                            pygame.Color('WHITE'),
-                                            ClickedPos,
-                                            False)                                    
-                '''
             pygame.display.flip()
             self.FPSCLOCK.tick(self.FPS)
 
 
+    def GetHelpMessageWindows(self):
+        Data = ('1 '+
+                '"[ Command Information ]" ' +
+                '" " ' + 
+                '"Hacker Commands" ' +
+                '"----------------------------------------------------------------------" '+
+                '"abort            - Abort an ongoing transfer, download, crack, etc." ' +
+                '"clear            - Clears the command console window." ' +
+                '"config           - Display the current hardware configuration." ' +
+                '"                   ex > config current" ' +
+                '"                        show current equipment levels." ' +
+                '"                   ex > config [equipment name] [equipment level]" ' +
+                '"                        set current equipment level." ' +
+                '"connect          - Connect to your target." ' +
+                '"                   ex > connect [Server Address] [Port]" ' +
+                '"                   ex > connect test.com 80" ' +
+                '"crack            - Crack your target sysytem." ' + 
+                '"decrypt          - Decrypts the encryption key of a server." ' +
+                '"delete           - Delete a file." ' +
+                '"                   ex > delete [FileName]" ' +
+                '"download         - download target\'s data that you want." ' +
+                '"                   ex > download [Target\'s FileName]" ' +
+                '"help             - Displays a list of commands and their meaning." ' +
+                '"scan             - Scan a host for open ports." ' +
+                '"                   ex > scan [host Address]" ' +
+                '"                   ex > scan test.com" ' +
+                '"upload           - upload your data to target that you connected." ' +
+                '"                   ex > upload [My FileName]" ' +
+                '"transfer         - transfer money to your localhost system." ' +
+                '"                   ex > transfer [Money]" ' +
+                '"                   ex > transfer 10000" ' +
+                '"" ' +
+                '"" ' +
+                '"Console Commands" ' +
+                '"----------------------------------------------------------------------" '+
+                '"cat              - Displays the contents of a file." ' +
+                '"                   ex > cat [FileName]" ' +
+                '"ls               - Display All directory Files." ' +
+                '"whoami           - Display who am i." '
+                )
+
+        os.system('start cmd /c printMessage.exe ' + Data)
+
+
+
+    def GetMissionStatus(self):
+        TargetMessage   = self.Prompt.Level.returnTargetMessage(self.Prompt.Level.currentLevel)
+        
+        for i, Msg in enumerate(TargetMessage):
+            if i >= 2:
+                if self.Prompt.Level.currentMissionFlag[i-2]:
+                    TargetMessage[i] = TargetMessage[i] + ' ( V )'
+                else:
+                    TargetMessage[i] = TargetMessage[i] + ' (   )'
+
+        TargetStatus = ''
+
+        for M in TargetMessage:
+            TargetStatus += '\"' + M + '\" '
+
+        Data            = ( '2 '+
+                            '"[ Mission Status ]" ' +
+                            TargetStatus
+                            )
+
+        os.system('start cmd /c printMessage.exe ' + Data)
 
 
 if __name__ == "__main__":

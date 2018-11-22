@@ -1,18 +1,21 @@
 import pygame
 import time
+import os
 from effectplayer import EffectPlayer
-from display import Text, Draw
+from display import Text, Draw, NewExplorer
 
 class Level:
-    def __init__(self, Level, Meta):
+    def __init__(self, Level, Meta, flag):
         '''
         self.levelStatus : Status of completion of level. if complete mission, it will change into True.
         '''
 
+        self.count          = 0
         self.currentLevel   = 0
         self.savedLevel     = Level
         self.currentEquip   = Meta
         self.startTime      = time.time()
+        self.FailedFlag     = flag      # if game over, the flag be changed to False 
         '''
         self.Flags      : Flags for playing game.
         -------------------------------------------------------------
@@ -54,7 +57,6 @@ class Level:
         self.TracingLengthPer               = 0
         self.TracingWidthPer                = 0
         self.TracingCase                    = 0
-        self.GameFlag                       = False
         self.SystemMonitorDomainInfo        = [ 'Domain Name',
                                                 'Pos',                  # Doesn't print
                                                 'PosText',              # Doesn't print
@@ -63,6 +65,7 @@ class Level:
                                                 'Status']               # Doesn't print
         self.SystemMonitorSecurityInfo      = [ 'Encryption key',
                                                 'Password Length']
+        self.currentMissionFlag             = []
 
         # Metadata localhost=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         self.currentPWD                     = 'localhost'
@@ -79,7 +82,153 @@ class Level:
         self.DisplayText.SetDisplaySurface(Screen)
 
 
+
     def Tutorial(self):
+        '''
+        
+        '''
+        # Draw the domain if loadStatus is True =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        count       = 0
+
+        ClearFlag               =   True
+
+
+        for i, loadStatus in enumerate(self.currentCanLoadDomain.values()):
+            if loadStatus == True:
+                if self.currentLevelCrackStatus[self.currentKeys[i]][0] == 0 and self.currentLevelCrackStatus[self.currentKeys[i]][1] == 0:
+                    DomainColor = pygame.Color('LIGHTGREEN')
+                else:
+                    DomainColor = pygame.Color('WHITE')
+                # Draw Center Point
+                self.DisplayDraw.DrawPoint(self.currentLoadedDomainInfo[self.currentKeys[i]][1],  # Domain Center Point Position
+                                           self.currentLoadedDomainInfo[self.currentKeys[i]][5])  # Domain Status
+                # Draw Text
+                self.DisplayText.makeText( self.FONT,                                             # Font
+                                           self.currentLoadedDomainInfo[self.currentKeys[i]][0],  # Domain String.
+                                           True,                                                  # Anti-Aliasing
+                                           DomainColor,                                           # WHITE Color
+                                           self.currentLoadedDomainInfo[self.currentKeys[i]][2],  # Domain Text Position
+                                           True)                                                  # Shadow Print True.
+            count += 1
+
+
+        # Check Level Mission =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+        # if hacker crack and decrypt www.tutorial.com ---------------------------------------------
+        if self.currentLevelCrackStatus['www.tutorial.com'][0] == 0 and self.currentLevelCrackStatus['www.tutorial.com'][1] == 0:
+            self.currentMissionFlag[0] = True
+
+        # if hacker downloaded [contract.docx], it is True -----------------------------------------
+        for FileName in self.currentLoadedDomainFiles['localhost']:
+            if FileName == 'URL_Information':
+                self.currentMissionFlag[1] = True
+
+        # if hacker deleted all files on there server ----------------------------------------------
+        if 'URL_Information' in self.currentLoadedDomainFiles['www.tutorial.com']:
+            pass
+        else:
+            self.LevelFailed('"You just deleted your mission files before you download. Mission File : [URL_INFORMATION]" ')
+
+        if len(self.currentLoadedDomainFiles['www.tutorial.com']) == 0:
+            if self.currentMissionFlag[1] == False:     # if delete all files before you download....
+                self.LevelFailed('"You just deleted all files before you download URL_INFORMATION..." ')
+            else:
+                self.currentMissionFlag[2] = True
+
+        # if hacker transfer all money -------------------------------------------------------------
+        if self.currentLoadedDomainInfo['www.tutorial.com'][3] == 0:
+            self.currentMissionFlag[3] = True
+
+        if self.DisplayDraw.EquipLevels[5] == 3 and self.DisplayDraw.EquipLevels[4] == 4:
+            self.currentMissionFlag[4] = True
+
+
+        # Check Level Clear =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        for Flag in self.currentMissionFlag:
+            if Flag == False:
+                ClearFlag = False
+
+        if ClearFlag == True:
+            self.LevelClear(1)
+
+        # For test....
+        '''if self.currentLevelCrackStatus['www.tutorial.com'][0] == 0:
+                                    self.LevelFailed('"You just deleted all files before you download URL_INFORMATION..." ')'''
+
+        '''
+        if FileExist2 == False:
+            print('If You Failed to decrypt or crack some system, Your game will over..')
+            print('Please abort if you cannot decrypt or crack your target.')
+        '''
+        
+
+
+    def TutorialTargetSet(self):
+        # Default Domain Status =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        canLoadDomain       = { 'localhost'             : True,
+                                'atm.secumaster.net'    : False,
+                                'www.tutorial.com'      : False
+                            }
+
+        loadedDomainInfo    = { 'localhost'             : [],
+                                'atm.secumaster.net'    : [],
+                                'www.tutorial.com'      : []
+                            }
+
+        loadedDomainFiles   = { 'localhost'             : {},
+                                'atm.secumaster.net'    : {},
+                                'www.tutorial.com'      : {}
+                            }
+
+        levelCrackStatus    = { 'localhost'             : [2048, 16],
+                                'atm.secumaster.net'    : [4096, 12],
+                                'www.tutorial.com'      : [ 128,  4]
+                            }
+        '''
+        [Crack Status, Crack Length, Decrypt Status, Password Length]
+        Crack           ==> Cracking System.
+        Crack Length    ==> Length of Cracking System(like hash, RSA, DSA)
+        Decrypt         ==> Decrypt Password of target.
+        Password Length ==> Length of Target's password.(like cipher, AES, DES)
+        '''
+
+        canLoadDomainKeys   = list(canLoadDomain)       # Keys of canLoadDomain
+
+        # Load Default Domain Status and each of filesystem =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        for Domain in canLoadDomain:
+            loadedDomainInfo[Domain], loadedDomainFiles[Domain] = self.Load.loadDomain(Domain)
+        
+
+        # Set metadata of this level=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        self.currentCanLoadDomain           = canLoadDomain
+        self.currentLoadedDomainInfo        = loadedDomainInfo
+        self.currentLoadedDomainFiles       = loadedDomainFiles
+        self.currentLevelCrackStatus        = levelCrackStatus
+        self.currentKeys                    = canLoadDomainKeys
+
+
+        # Set Localhost and Target=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        self.currentLoadedDomainInfo['localhost'][5]        = self.DisplayDraw.LOCAL   # localhost
+        self.currentLoadedDomainInfo['www.tutorial.com'][5] = self.DisplayDraw.TARGET  # target
+
+        self.currentEquip           = 0x01110101
+        self.currentMissionFlag     = [ False,  # HackTutorialCom
+                                        False,  # DownloadFile
+                                        False,  # DeleteAllFiles
+                                        False,  # TransferAllMoney
+                                        False]  # ChangeEquipLevel
+
+        #self.currentEquip = 0x08888888 # For testing
+        self.DisplayDraw.SetEquipStatus(self.currentEquip)
+
+        # Set Localhost money for tutorial mission=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        self.currentLoadedDomainInfo['localhost'][3]        = 100000
+
+
+
+    def LevelOne(self):
         '''
         
         '''
@@ -116,23 +265,20 @@ class Level:
             if FileName == 'users.db':
                 FileExist2 = True
 
-        #if FileExist1 == False and FileExist2 == True:
-        #    self.LevelClear(1)
+        if FileExist1 == False and FileExist2 == True:
+            self.LevelClear(1)
 
-        #if FileExist2 == False:
-        #    self.LevelFailed()
-
-        
+        if FileExist2 == False:
+            self.LevelFailed("haha")
 
 
-    def TutorialTargetSet(self):
+    def LevelOneTargetSet(self):
         # Default Domain Status =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         canLoadDomain       = { 'localhost'             : True,
                                 'atm.secumaster.net'    : False,
                                 'atm.design.net'        : False,
                                 'www.design.com'        : False,
                                 'www.paradox.com'       : False,
-                                'www.tutorial.com'      : True
                             }
 
         loadedDomainInfo    = { 'localhost'             : [],
@@ -140,7 +286,6 @@ class Level:
                                 'atm.design.net'        : [],
                                 'www.design.com'        : [],
                                 'www.paradox.com'       : [],
-                                'www.tutorial.com'      : []
                             }
 
         loadedDomainFiles   = { 'localhost'             : {},
@@ -148,15 +293,13 @@ class Level:
                                 'atm.design.net'        : {},
                                 'www.design.com'        : {},
                                 'www.paradox.com'       : {},
-                                'www.tutorial.com'      : {}
                             }
 
         levelCrackStatus    = { 'localhost'             : [2048, 16],
-                                'atm.secumaster.net'    : [ 256,  4],
-                                'atm.design.net'        : [4096,  8],
+                                'atm.secumaster.net'    : [ 256,  8],
+                                'atm.design.net'        : [2048, 32],
                                 'www.design.com'        : [1024, 32],
-                                'www.paradox.com'       : [ 0,  0],
-                                'www.tutorial.com'      : [ 0,  0]
+                                'www.paradox.com'       : [ 128,  8],
                             }
         '''
         [Crack Status, Crack Length, Decrypt Status, Password Length]
@@ -183,23 +326,11 @@ class Level:
 
         # Set Localhost and Target=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         self.currentLoadedDomainInfo['localhost'][5]       = self.DisplayDraw.LOCAL   # localhost
-        self.currentLoadedDomainInfo['www.paradox.com'][5] = self.DisplayDraw.TARGET  # target
+        self.currentLoadedDomainInfo['www.design.com'][5]  = self.DisplayDraw.TARGET  # target
 
-        #self.currentEquip = tutorialEquip   = 0x02240202
-        self.currentEquip = tutorialEquip   = 0x08888888
+        self.currentEquip           = 0x01110101
+
         self.DisplayDraw.SetEquipStatus(self.currentEquip)
-
-        # Set Localhost money for tutorial mission=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        self.currentLoadedDomainInfo['localhost'][3]       = 100000
-
-
-
-    def LevelOne(self):
-        '''
-        :param EquipMetaData:   Metadata if Equipment.
-
-        '''
-        #
 
 
 
@@ -208,27 +339,27 @@ class Level:
 
 
 
+
+
     def LevelSetup(self):
         # If mission target and mission information is not set up ----------------------------------
-        if self.setTarget == False:
+        if self.setTarget == False:     # It makes work, only one time.
             self.setTarget = True
 
             if self.currentLevel == 0:
                 self.TutorialTargetSet()
             elif self.currentLevel == 1:
-                pass
+                self.LevelOneTargetSet()
+            elif self.currentLevel == 2:
+                self.LevelTwoTargetSet()
 
         # Printing mission -------------------------------------------------------------------------
-
         if self.currentLevel == 0:
             self.Tutorial()
         elif self.currentLevel == 1:
             self.LevelOne()
         elif self.currentLevel == 2:
             self.LevelTwo()
-
-        if self.GameFlag == True:
-            self.DisplayDraw.DrawGameOver()
 
         # Draw Equipments =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         self.DisplayDraw.DrawEquipment()       
@@ -397,7 +528,7 @@ class Level:
             # Cracking Password System.
             # Using number of characters.
             equipLevel          = self.GetCurrentEquipLevel('CPU')
-            self.ProcessingTime = ( 30 * equipLevel * Overhead ) / (self.currentLevelCrackStatus[host][1] * 128)
+            self.ProcessingTime = ( 30 * equipLevel * Overhead ) / (self.currentLevelCrackStatus[host][1] * 32)
                                 
         elif procType == 'download':
             # Downloading File from Target System.
@@ -649,16 +780,25 @@ class Level:
 
         1 line ==> 56 characters
         '''
+        Level00 = ['Targets : \'www . tutorial . com\'',
+                   'Mission :  Follow the instructions below.',
+                   '- Hack [www . tutorial . com]',
+                   '- Download [URL_Information] from [www . tutorial . com]',
+                   '- Delete all files from [www . tutorial . com]',
+                   '- Transfer all money from [ www . tutorial . com]',
+                   '- Change your equipments [CPU1 - 4, MODEM - 3]'
+                    ]
 
-        Level00 = ['Targets : \"www . paradox . com\"',
+        Level01 = ['Targets : \'www . paradox . com\'',
                    'Mission :  Download user database and delete contract.docx.',
-                   '- Download \"users . db\"',
-                   '- Delete \"contract . docx\"']
-        Level01 = ['Target  : Korea(South) - [Company - Nexon<DB Server>]',
+                   '- Download \'users . db\'',
+                   '- Delete \'contract . docx\'']
+
+        Level02 = ['Target  : Korea(South) - [Company - Nexon<DB Server>]',
                    'Mission : Confirm that Nexon has \"customer\'s User Data\"',
                    '- find <User Data File> in Nexon Database Server.',
                    '- \"User Data File : \'userdata.db\'']
-        Level02 = []
+
         Level03 = []
         Level04 = []
         Level05 = []
@@ -683,12 +823,21 @@ class Level:
         input('press any key')
 
 
-    def LevelFailed(self):
-        print('Level Failed..')
+    def LevelFailed(self, reason):
+        Data = ('0 '+
+                '".. Game Over .. " '+
+                reason)
+
+        self.FailedFlag[0] = False
+
+        os.system('start cmd /c printMessage.exe ' + Data)
+        
 
 
     def GetCurrentLevel(self):
         return self.currentLevel
+
+
 
 
     def SetCurrentLevel(self, Level):
@@ -696,6 +845,8 @@ class Level:
         :param Level:       Level data that is choosen from user.
         '''
         self.currentLevel = Level
+
+
 
 
     #def GetCurrentMissionPos(self):
@@ -855,6 +1006,18 @@ class Load:
                 FileDict[File][i] = FileDict[File][i][count[i]:].decode()
             count       = [0, 0, 0]
                 
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Node and BinarySearchTree Class Definition =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
