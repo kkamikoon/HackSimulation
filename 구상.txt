@@ -1,0 +1,54 @@
+requirements.
+pygame, vlc
+
+파일로 만들어서... url, 위치, 파일 리스트, 돈 및 기타 정보를 파일로....
+
+Single Domain's data  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Domain(24Bytes)     - 
+Position(4Bytes)    - 2Bytes, 2Bytes
+Status(1Byte)       - NORMAL, HIDDEN, TARGET, etc..
+Color(9Bytes)       - (1Byte, 1Byte, 1Byte) * 3
+        +++++++++++++++++++++++++
+Node Number(4Bytes) - Number
+Filename(256Bytes)  - Filename(255Bytes) + \n(1Byte)
+Date(20Bytes)       - Filename(19Bytes)  + \n(1Byte) ==> YYYY-MM-DD hh:mm:ss
+Data(1024Bytes)     - Maximum Data(1024Bytes)
+
+
+Domains =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+<bank>
+atm.secumaster.net
+
+atm.design.net
+atm2.design.net
+
+atm.whoami.net
+atm2.whoami.net
+
+atm.phantasm.net
+atm.paradox.net
+
+
+
+<goverments>
+korea.go.kr
+japan.go.kr
+deutschland.go.kr   
+america.go.kr       (275,235)(워싱턴)
+
+
+
+<security server>
+sec.secumaster.net
+hack.design.net
+hack.whoami.net
+
+
+<localhost>
+localhost
+
+
+
+

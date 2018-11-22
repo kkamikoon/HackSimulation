@@ -1,0 +1,20 @@
+case 1 : localhost보다    x가 큼,   y가 큼
+case 2 : localhost보다    x가 큼,   y가 작음
+case 3 : localhost보다    x가 작음, y가 큼
+case 4 : localhost보다    x가 작음, y가 작음
+
+
+case 1 : localhost보다    x가 큼,   y가 큼
+ - length, width만 줄면 됨
+ 
+case 2 : localhost보다    x가 큼,   y가 작음
+ - length, width가 감소함
+ - x는 그대로, y는 증가
+ 
+case 3 : localhost보다    x가 작음, y가 큼
+ - length, width가 감소함
+ - x는 증가,  y는 그대로
+ 
+case 4 : localhost보다    x가 작음, y가 작음
+ - length, width가 감소함
+ - x는 증가,  y는 증가
